@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Spinner } from "./Spinner";
 
-function App() {
-  const [count, setCount] = useState(0)
+const buttonCopy = {
+  idle: "Send me a login link",
+  loading: <Spinner size={16} color="rgba(255, 255, 255, 0.65)" />,
+  success: "Login link sent!",
+} as const;
+
+export default function SmoothButton() {
+  const [buttonState, setButtonState] =
+    useState<keyof typeof buttonCopy>("idle");
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <button
+      className="blue-button"
+      disabled={buttonState === "loading"}
+      onClick={() => {
+        // This is just for the sake of this demo
+        if (buttonState === "success") return;
 
-export default App
+        // These `setTimeouts` should not be used in prod
+        // and are here only to demonstrate the animation
+        setButtonState("loading");
+
+        setTimeout(() => {
+          setButtonState("success");
+        }, 1750);
+
+        setTimeout(() => {
+          setButtonState("idle");
+        }, 3500);
+      }}
+    >
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+          initial={{ opacity: 0, y: -25 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 25 }}
+          key={buttonState}
+        >
+          {buttonCopy[buttonState]}
+        </motion.span>
+      </AnimatePresence>
+    </button>
+  );
+}
